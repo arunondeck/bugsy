@@ -1,0 +1,203 @@
+.fbw-root {
+  position: fixed;
+  bottom: 1.5rem;
+  z-index: 2147483000;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+.fbw-root[data-position='right'] {
+  right: 1.5rem;
+}
+
+.fbw-root[data-position='left'] {
+  left: 1.5rem;
+}
+
+.fbw-launcher {
+  background: #2563eb;
+  color: white;
+  border: none;
+  border-radius: 9999px;
+  padding: 0.75rem 1.25rem;
+  box-shadow: 0 10px 30px rgba(37, 99, 235, 0.3);
+  cursor: pointer;
+  font-size: 0.95rem;
+}
+
+.fbw-modal {
+  display: none;
+}
+
+.fbw-modal.is-visible {
+  display: block;
+}
+
+.fbw-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.45);
+}
+
+.fbw-dialog {
+  position: fixed;
+  bottom: 4.5rem;
+  right: 1.5rem;
+  width: min(360px, calc(100vw - 2rem));
+  background: white;
+  border-radius: 0.75rem;
+  box-shadow: 0 25px 60px rgba(15, 23, 42, 0.25);
+  overflow: hidden;
+  color: #0f172a;
+}
+
+.fbw-root[data-theme='dark'] .fbw-dialog,
+.fbw-root[data-theme='dark'] .fbw-footer,
+.fbw-root[data-theme='dark'] .fbw-header {
+  background: #0f172a;
+  color: #e2e8f0;
+}
+
+.fbw-root[data-theme='dark'] .fbw-dialog {
+  box-shadow: 0 25px 60px rgba(2, 6, 23, 0.6);
+}
+
+.fbw-root[data-theme='dark'] .fbw-field input,
+.fbw-root[data-theme='dark'] .fbw-field textarea {
+  background: rgba(30, 41, 59, 0.6);
+  border-color: rgba(148, 163, 184, 0.4);
+  color: inherit;
+}
+
+.fbw-root[data-theme='dark'] .fbw-cancel {
+  border-color: rgba(148, 163, 184, 0.4);
+  color: inherit;
+}
+
+.fbw-root[data-theme='dark'] .fbw-overlay {
+  background: rgba(2, 6, 23, 0.75);
+}
+
+@media (prefers-color-scheme: dark) {
+  .fbw-root[data-theme='auto'] .fbw-dialog,
+  .fbw-root[data-theme='auto'] .fbw-footer,
+  .fbw-root[data-theme='auto'] .fbw-header {
+    background: #0f172a;
+    color: #e2e8f0;
+  }
+
+  .fbw-root[data-theme='auto'] .fbw-overlay {
+    background: rgba(2, 6, 23, 0.75);
+  }
+
+  .fbw-root[data-theme='auto'] .fbw-field input,
+  .fbw-root[data-theme='auto'] .fbw-field textarea {
+    background: rgba(30, 41, 59, 0.6);
+    border-color: rgba(148, 163, 184, 0.4);
+    color: inherit;
+  }
+
+  .fbw-root[data-theme='auto'] .fbw-cancel {
+    border-color: rgba(148, 163, 184, 0.4);
+    color: inherit;
+  }
+}
+
+.fbw-header,
+.fbw-footer {
+  padding: 1rem 1.25rem;
+  background: #f8fafc;
+}
+
+.fbw-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.fbw-close {
+  background: transparent;
+  border: none;
+  font-size: 1.25rem;
+  cursor: pointer;
+}
+
+.fbw-form {
+  padding: 1rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.fbw-field label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  font-size: 0.9rem;
+  color: inherit;
+}
+
+.fbw-field input,
+.fbw-field textarea {
+  border: 1px solid #cbd5f5;
+  border-radius: 0.5rem;
+  padding: 0.6rem 0.75rem;
+  font: inherit;
+}
+
+.fbw-toggle label {
+  flex-direction: row;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.fbw-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+}
+
+.fbw-cancel,
+.fbw-submit {
+  border-radius: 0.5rem;
+  padding: 0.6rem 1rem;
+  font: inherit;
+  cursor: pointer;
+}
+
+.fbw-cancel {
+  background: transparent;
+  border: 1px solid #cbd5f5;
+}
+
+.fbw-submit {
+  background: #2563eb;
+  color: white;
+  border: none;
+}
+
+.fbw-submit:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.fbw-error {
+  color: #b91c1c;
+  font-size: 0.85rem;
+  min-height: 1rem;
+  display: none;
+}
+
+.fbw-error.is-visible {
+  display: block;
+}
+
+.fbw-upload-status {
+  font-size: 0.8rem;
+  display: flex;
+  gap: 0.75rem;
+}
+
+[data-uploading],
+[data-uploaded] {
+  display: none;
+}
