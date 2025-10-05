@@ -6,6 +6,7 @@ const defaultSubmitState: SubmitState = {
   email: '',
   includeUser: false,
   includeScreenshot: false,
+  includePageDetails: false,
   uploading: false,
   submitting: false,
   error: undefined,
@@ -31,6 +32,40 @@ export function widgetReducer(state: WidgetState, action: WidgetAction): WidgetS
       return { ...state, open: false };
     case 'SUBMIT_UPDATE':
       return { ...state, submit: { ...state.submit, ...action.payload, error: undefined } };
+    case 'SCREENSHOT_CAPTURE_START':
+      return {
+        ...state,
+        submit: {
+          ...state.submit,
+          error: undefined,
+          uploading: false,
+          screenshot: { capturing: true },
+        },
+      };
+    case 'SCREENSHOT_CAPTURE_OK':
+      return {
+        ...state,
+        submit: {
+          ...state.submit,
+          error: undefined,
+          screenshot: {
+            capturing: false,
+            file: action.payload.file,
+            previewDataUrl: action.payload.previewDataUrl,
+          },
+        },
+      };
+    case 'SCREENSHOT_CAPTURE_ERR':
+      return {
+        ...state,
+        submit: {
+          ...state.submit,
+          error: action.payload.error,
+          uploading: false,
+          includeScreenshot: false,
+          screenshot: undefined,
+        },
+      };
     case 'UPLOAD_START':
       return {
         ...state,
@@ -38,7 +73,10 @@ export function widgetReducer(state: WidgetState, action: WidgetAction): WidgetS
           ...state.submit,
           uploading: true,
           error: undefined,
-          screenshot: state.submit.screenshot ?? {},
+          screenshot: {
+            ...(state.submit.screenshot ?? {}),
+            capturing: false,
+          },
         },
       };
     case 'UPLOAD_OK':
@@ -47,7 +85,11 @@ export function widgetReducer(state: WidgetState, action: WidgetAction): WidgetS
         submit: {
           ...state.submit,
           uploading: false,
-          screenshot: { ...(state.submit.screenshot ?? {}), publicUrl: action.payload.publicUrl },
+          screenshot: {
+            ...(state.submit.screenshot ?? {}),
+            capturing: false,
+            publicUrl: action.payload.publicUrl,
+          },
         },
       };
     case 'UPLOAD_ERR':
@@ -72,6 +114,7 @@ export function widgetReducer(state: WidgetState, action: WidgetAction): WidgetS
         submit: {
           ...defaultSubmitState,
           includeUser: state.submit.includeUser,
+          includePageDetails: state.submit.includePageDetails,
           captchaToken: state.captcha ? undefined : state.submit.captchaToken,
         },
       };

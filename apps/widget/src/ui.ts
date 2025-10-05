@@ -1,4 +1,5 @@
 import { buildSubmission, deriveContext } from './helpers.js';
+import { capturePageScreenshot } from './screenshot.js';
 import type { WidgetAction, WidgetState, WidgetInit } from './types.js';
 
 interface ViewDeps {
@@ -16,6 +17,7 @@ export class WidgetView {
   private deps: ViewDeps;
   private init: WidgetInit;
   private state: WidgetState;
+  private captureInFlight = false;
   private captchaWidgetId?: string;
   private previousCaptchaToken?: string;
 
@@ -80,7 +82,8 @@ export class WidgetView {
     const emailInput = this.form.querySelector<HTMLInputElement>('input[name="email"]')!;
     const includeUserInput = this.form.querySelector<HTMLInputElement>('input[name="includeUser"]')!;
     const includeScreenshotInput = this.form.querySelector<HTMLInputElement>('input[name="includeScreenshot"]')!;
-    const screenshotFileInput = this.form.querySelector<HTMLInputElement>('input[name="screenshotFile"]')!;
+    const includePageDetailsInput = this.form.querySelector<HTMLInputElement>('input[name="includePageDetails"]')!;
+    const retakeButton = this.form.querySelector<HTMLButtonElement>('[data-screenshot-retake]');
 
     titleInput.addEventListener('input', () =>
       this.deps.dispatch({ type: 'SUBMIT_UPDATE', payload: { title: titleInput.value } }),
@@ -94,32 +97,61 @@ export class WidgetView {
     includeUserInput.addEventListener('change', () =>
       this.deps.dispatch({ type: 'SUBMIT_UPDATE', payload: { includeUser: includeUserInput.checked } }),
     );
+    includePageDetailsInput.addEventListener('change', () =>
+      this.deps.dispatch({
+        type: 'SUBMIT_UPDATE',
+        payload: { includePageDetails: includePageDetailsInput.checked },
+      }),
+    );
     includeScreenshotInput.addEventListener('change', () => {
       const include = includeScreenshotInput.checked;
       this.deps.dispatch({ type: 'SUBMIT_UPDATE', payload: { includeScreenshot: include } });
       if (!include) {
         this.deps.dispatch({ type: 'SUBMIT_UPDATE', payload: { screenshot: undefined } });
-      } else if (screenshotFileInput.files?.[0]) {
-        this.handleScreenshotUpload(screenshotFileInput.files[0]);
+      } else {
+        void this.captureScreenshot();
       }
     });
 
-    screenshotFileInput.addEventListener('change', () => {
-      const file = screenshotFileInput.files?.[0];
-      if (file) {
-        this.handleScreenshotUpload(file);
-      }
+    retakeButton?.addEventListener('click', () => {
+      void this.captureScreenshot();
     });
   }
 
-  private async handleScreenshotUpload(file: File) {
-    this.deps.dispatch({ type: 'SUBMIT_UPDATE', payload: { screenshot: { file } } });
+  private async handleScreenshotUpload(file: File, options: { skipStateUpdate?: boolean } = {}) {
+    if (!options.skipStateUpdate) {
+      this.deps.dispatch({ type: 'SUBMIT_UPDATE', payload: { screenshot: { file } } });
+    }
     this.deps.dispatch({ type: 'UPLOAD_START' });
     try {
       await this.deps.uploadScreenshot(file);
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Screenshot upload failed.';
       this.deps.dispatch({ type: 'UPLOAD_ERR', payload: { error: message } });
+    }
+  }
+
+  private async captureScreenshot(): Promise<void> {
+    if (this.captureInFlight || !this.state.submit.includeScreenshot || this.state.submit.uploading) {
+      return;
+    }
+    this.captureInFlight = true;
+    this.deps.dispatch({ type: 'SCREENSHOT_CAPTURE_START' });
+    try {
+      const result = await capturePageScreenshot();
+      if (!this.state.submit.includeScreenshot) {
+        return;
+      }
+      this.deps.dispatch({
+        type: 'SCREENSHOT_CAPTURE_OK',
+        payload: { file: result.file, previewDataUrl: result.previewDataUrl },
+      });
+      await this.handleScreenshotUpload(result.file, { skipStateUpdate: true });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Unable to capture screenshot. Please check browser permissions.';
+      this.deps.dispatch({ type: 'SCREENSHOT_CAPTURE_ERR', payload: { error: message } });
+    } finally {
+      this.captureInFlight = false;
     }
   }
 
@@ -132,13 +164,30 @@ export class WidgetView {
       const firstInput = this.form.querySelector<HTMLInputElement>('input[name="title"]');
       firstInput?.focus();
     }
+
     const { submit } = this.state;
     const submitButton = this.form.querySelector('button[type="submit"]') as HTMLButtonElement;
-    submitButton.disabled = !submit.title?.trim() || submit.submitting || submit.uploading;
+    const isCapturing = Boolean(submit.screenshot?.capturing);
+    submitButton.disabled = !submit.title?.trim() || submit.submitting || submit.uploading || isCapturing;
+
     const errorBox = this.form.querySelector('.fbw-error');
     if (errorBox) {
       errorBox.textContent = submit.error ?? '';
       errorBox.classList.toggle('is-visible', Boolean(submit.error));
+    }
+
+    const includeUserInput = this.form.querySelector<HTMLInputElement>('input[name="includeUser"]');
+    const includeScreenshotInput = this.form.querySelector<HTMLInputElement>('input[name="includeScreenshot"]');
+    const includePageDetailsInput = this.form.querySelector<HTMLInputElement>('input[name="includePageDetails"]');
+
+    if (includeUserInput) {
+      includeUserInput.checked = submit.includeUser;
+    }
+    if (includeScreenshotInput) {
+      includeScreenshotInput.checked = submit.includeScreenshot;
+    }
+    if (includePageDetailsInput) {
+      includePageDetailsInput.checked = submit.includePageDetails;
     }
 
     const emailWrapper = this.form.querySelector('[data-email-wrapper]') as HTMLElement;
@@ -147,11 +196,41 @@ export class WidgetView {
     const screenshotWrapper = this.form.querySelector('[data-screenshot-wrapper]') as HTMLElement;
     screenshotWrapper.style.display = submit.includeScreenshot ? 'block' : 'none';
 
+    const previewEl = this.form.querySelector('[data-screenshot-preview]') as HTMLElement;
+    const previewImg = this.form.querySelector<HTMLImageElement>('[data-screenshot-image]');
+    const emptyEl = this.form.querySelector('[data-screenshot-empty]') as HTMLElement;
+    const retakeButton = this.form.querySelector<HTMLButtonElement>('[data-screenshot-retake]');
+    const capturingEl = this.form.querySelector('[data-capturing]') as HTMLElement;
     const uploadingEl = this.form.querySelector('[data-uploading]') as HTMLElement;
-    uploadingEl.style.display = submit.uploading ? 'inline-flex' : 'none';
-
     const successEl = this.form.querySelector('[data-uploaded]') as HTMLElement;
-    successEl.style.display = submit.screenshot?.publicUrl ? 'inline-flex' : 'none';
+
+    const hasPreview = Boolean(submit.screenshot?.previewDataUrl);
+    if (previewEl) {
+      previewEl.style.display = submit.includeScreenshot && hasPreview ? 'flex' : 'none';
+    }
+    if (previewImg) {
+      if (submit.includeScreenshot && hasPreview && submit.screenshot?.previewDataUrl) {
+        previewImg.src = submit.screenshot.previewDataUrl;
+      } else {
+        previewImg.removeAttribute('src');
+      }
+    }
+    if (emptyEl) {
+      emptyEl.style.display = submit.includeScreenshot && !hasPreview ? 'block' : 'none';
+    }
+
+    if (capturingEl) {
+      capturingEl.style.display = submit.includeScreenshot && isCapturing ? 'inline-flex' : 'none';
+    }
+    if (uploadingEl) {
+      uploadingEl.style.display = submit.includeScreenshot && submit.uploading ? 'inline-flex' : 'none';
+    }
+    if (successEl) {
+      successEl.style.display = submit.includeScreenshot && submit.screenshot?.publicUrl ? 'inline-flex' : 'none';
+    }
+    if (retakeButton) {
+      retakeButton.disabled = !submit.includeScreenshot || submit.uploading || isCapturing;
+    }
 
     if (this.init.captcha && !submit.captchaToken && this.previousCaptchaToken) {
       this.resetCaptcha();
@@ -178,7 +257,7 @@ export class WidgetView {
       <div class="fbw-dialog" role="dialog" aria-modal="true" aria-labelledby="fbw-title">
         <header class="fbw-header">
           <h2 id="fbw-title">Send feedback</h2>
-          <button type="button" class="fbw-close" aria-label="Close">×</button>
+          <button type="button" class="fbw-close" aria-label="Close">&times;</button>
         </header>
         <form class="fbw-form">
           <div class="fbw-field">
@@ -209,11 +288,24 @@ export class WidgetView {
             </label>
           </div>
           <div class="fbw-field" data-screenshot-wrapper>
-            <input type="file" name="screenshotFile" accept="image/*" />
-            <div class="fbw-upload-status">
-              <span data-uploading>Uploading…</span>
-              <span data-uploaded>Uploaded ✓</span>
+            <div class="fbw-screenshot-empty" data-screenshot-empty>
+              A screenshot of this page will be captured automatically when enabled.
             </div>
+            <div class="fbw-screenshot-preview" data-screenshot-preview>
+              <img data-screenshot-image alt="Screenshot preview" />
+              <button type="button" class="fbw-retake" data-screenshot-retake>Retake screenshot</button>
+            </div>
+            <div class="fbw-upload-status">
+              <span data-capturing>Capturing...</span>
+              <span data-uploading>Uploading...</span>
+              <span data-uploaded>Uploaded &#10003;</span>
+            </div>
+          </div>
+          <div class="fbw-field fbw-toggle">
+            <label>
+              <input type="checkbox" name="includePageDetails" />
+              Include page details (page url, console statements)
+            </label>
           </div>
           ${this.init.captcha ? '<div class="fbw-field" data-captcha></div>' : ''}
           <div class="fbw-error" role="alert"></div>
@@ -234,6 +326,8 @@ export class WidgetView {
     emailWrapper.style.display = 'none';
     const screenshotWrapper = wrapper.querySelector('[data-screenshot-wrapper]') as HTMLElement;
     screenshotWrapper.style.display = 'none';
+    const previewEl = wrapper.querySelector('[data-screenshot-preview]') as HTMLElement;
+    previewEl.style.display = 'none';
 
     return wrapper;
   }

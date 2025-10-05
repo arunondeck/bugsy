@@ -7,11 +7,16 @@
   "types": "dist/embed.d.ts",
   "scripts": {
     "clean": "rimraf dist",
-    "build": "pnpm clean && tsc && node ./scripts/build-css.js"
+    "build": "pnpm clean && tsc && node ./scripts/build-css.js",
+    "preview": "pnpm run build && pnpm run preview:serve",
+    "preview:serve": "http-server . -p 4173 -c-1 --cors -o /demo/",
+    "preview:watch": "concurrently -k -n build,serve \"pnpm run build -- --watch\" \"http-server . -p 4173 -c-1 --cors\""
   },
   "dependencies": {},
   "devDependencies": {
     "@types/node": "^20.14.9",
+    "concurrently": "^9.0.1",
+    "http-server": "^14.1.1",
     "rimraf": "^5.0.5",
     "typescript": "^5.4.5"
   }

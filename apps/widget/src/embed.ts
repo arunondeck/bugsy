@@ -1,4 +1,5 @@
 import { assertWindow, fingerprintAnon, hashIdentity } from './helpers.js';
+import { startConsoleCapture } from './diagnostics.js';
 import { FeedbackApiClient } from './network.js';
 import { createInitialState, widgetReducer } from './state.js';
 import { WidgetView } from './ui.js';
@@ -90,6 +91,7 @@ function bootstrap() {
     console.warn('[FBW] Missing project key. Widget disabled.');
     return;
   }
+  startConsoleCapture();
   const controller = new WidgetController(config);
   win.FBW = controller;
 }

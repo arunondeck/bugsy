@@ -1,9 +1,9 @@
+import { getConsoleEntries } from './diagnostics.js';
 import { createHash } from './polyfills.js';
 import type {
   AttachmentPayload,
   SubmissionContext,
   SubmissionPayload,
-  SubmitState,
   WidgetState,
 } from './types.js';
 
@@ -44,12 +44,31 @@ export function buildSubmission(state: WidgetState, context: SubmissionContext):
   if (includeUser && email && !EMAIL_REGEX.test(email)) {
     throw new Error('Please enter a valid email address.');
   }
+
+  const includePageDetails = Boolean(submit.includePageDetails);
+  const contextPayload: SubmissionContext = includePageDetails
+    ? { ...context }
+    : {
+        pageUrl: '',
+        referrer: '',
+        ua: '',
+        locale: '',
+        viewport: { w: 0, h: 0 },
+      };
+
+  if (includePageDetails) {
+    const consoleEntries = getConsoleEntries();
+    if (consoleEntries.length) {
+      contextPayload.console = consoleEntries;
+    }
+  }
+
   const payload: SubmissionPayload = {
     title,
     body,
     includeUser: includeUser || undefined,
     tags: [...tags],
-    context,
+    context: contextPayload,
     attachments,
   };
 

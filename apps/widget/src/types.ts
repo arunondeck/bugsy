@@ -33,6 +33,7 @@ export interface SubmitState {
   email?: string;
   includeUser: boolean;
   includeScreenshot: boolean;
+  includePageDetails: boolean;
   uploading: boolean;
   submitting: boolean;
   error?: string;
@@ -42,6 +43,8 @@ export interface SubmitState {
 
 export interface ScreenshotState {
   file?: File;
+  previewDataUrl?: string;
+  capturing?: boolean;
   publicUrl?: string;
 }
 
@@ -57,6 +60,9 @@ export type WidgetAction =
   | { type: 'OPEN' }
   | { type: 'CLOSE' }
   | { type: 'SUBMIT_UPDATE'; payload: Partial<SubmitState> }
+  | { type: 'SCREENSHOT_CAPTURE_START' }
+  | { type: 'SCREENSHOT_CAPTURE_OK'; payload: { file: File; previewDataUrl: string } }
+  | { type: 'SCREENSHOT_CAPTURE_ERR'; payload: { error: string } }
   | { type: 'UPLOAD_START' }
   | { type: 'UPLOAD_OK'; payload: { publicUrl: string } }
   | { type: 'UPLOAD_ERR'; payload: { error: string } }
@@ -66,12 +72,19 @@ export type WidgetAction =
   | { type: 'IDENTIFY_SET'; payload?: { profileHash?: string } }
   | { type: 'SET_TAGS'; payload: string[] };
 
+export interface ConsoleEntry {
+  level: 'log' | 'info' | 'warn' | 'error';
+  message: string;
+  timestamp: string;
+}
+
 export interface SubmissionContext {
   pageUrl: string;
   referrer: string;
   ua: string;
   locale: string;
   viewport: { w: number; h: number };
+  console?: ConsoleEntry[];
 }
 
 export interface SubmissionPayload {

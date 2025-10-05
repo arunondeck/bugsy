@@ -122,9 +122,13 @@ pnpm --filter api dev
 pnpm --filter dashboard-client dev
 pnpm --filter dashboard-admin dev
 
-# run widget demo
-pnpm --filter widget dev
+# build widget bundle
+pnpm --filter widget build
+
+# launch widget preview (build + static demo page)
+pnpm --filter widget preview
 ```
+Use `pnpm --filter widget preview:watch` during development to rebuild the bundle while serving the demo at http://localhost:4173/demo/.
 
 ---
 
