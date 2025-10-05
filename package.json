@@ -1,8 +1,12 @@
-{
+﻿{
   "name": "bugsy",
   "private": true,
   "packageManager": "pnpm@8.15.4",
   "scripts": {
-    "build": "pnpm --filter widget build"
+    "dev": "pnpm --filter dashboard-client dev",
+    "build": "pnpm --filter widget build && pnpm --filter dashboard-client build",
+    "build:widget": "pnpm --filter widget build",
+    "lint": "pnpm --filter dashboard-client lint",
+    "typecheck": "pnpm --filter dashboard-client typecheck"
   }
 }

@@ -2,4 +2,8 @@ node_modules
 .pnpm-store
 pnpm-lock.yaml
 apps/widget/dist
+.next
+.turbo
+.env*
+.vercel
 .DS_Store

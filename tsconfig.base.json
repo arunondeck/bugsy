@@ -12,6 +12,13 @@
     "sourceMap": true,
     "downlevelIteration": true,
     "lib": ["DOM", "ES2020"],
-    "types": []
+    "types": [],
+    "baseUrl": ".",
+    "paths": {
+      "@bugsy/domain": ["packages/domain/src/index.ts"],
+      "@bugsy/ports": ["packages/ports/src/index.ts"],
+      "@bugsy/shared": ["packages/shared/src/index.ts"],
+      "@bugsy/repo-memory": ["adapters/repo.memory/src/index.ts"]
+    }
   }
 }

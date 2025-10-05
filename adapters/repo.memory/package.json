@@ -1,0 +1,19 @@
+{
+  "name": "@bugsy/repo-memory",
+  "version": "0.1.0",
+  "type": "module",
+  "private": true,
+  "sideEffects": false,
+  "exports": {
+    "./package.json": "./package.json",
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./src/index.ts"
+    }
+  },
+  "dependencies": {
+    "@bugsy/domain": "workspace:*",
+    "@bugsy/ports": "workspace:*",
+    "date-fns": "^3.6.0"
+  }
+}
