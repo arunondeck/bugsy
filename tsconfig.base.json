@@ -1,0 +1,24 @@
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "downlevelIteration": true,
+    "lib": ["DOM", "ES2020"],
+    "types": [],
+    "baseUrl": ".",
+    "paths": {
+      "@bugsy/domain": ["packages/domain/src/index.ts"],
+      "@bugsy/ports": ["packages/ports/src/index.ts"],
+      "@bugsy/shared": ["packages/shared/src/index.ts"],
+      "@bugsy/repo-memory": ["adapters/repo.memory/src/index.ts"]
+    }
+  }
+}

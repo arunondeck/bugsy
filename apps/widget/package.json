@@ -1,0 +1,18 @@
+{
+  "name": "widget",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "main": "dist/embed.js",
+  "types": "dist/embed.d.ts",
+  "scripts": {
+    "clean": "rimraf dist",
+    "build": "pnpm clean && tsc && node ./scripts/build-css.js"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "@types/node": "^20.14.9",
+    "rimraf": "^5.0.5",
+    "typescript": "^5.4.5"
+  }
+}
