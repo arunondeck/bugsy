@@ -1,0 +1,104 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Account {
+  id        String          @id @default(cuid())
+  name      String
+  planId    String
+  createdAt DateTime        @default(now())
+  users     User[]
+  projects  Project[]
+  usage     UsageCounter[]
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  roles     Json     @default("[]")
+  accountId String
+  account   Account  @relation(fields: [accountId], references: [id])
+  createdAt DateTime @default(now())
+}
+
+model Plan {
+  id        String   @id @default(cuid())
+  name      String
+  priceUsd  Int
+  trialDays Int
+  limits    Json
+  features  Json
+  published Boolean @default(false)
+}
+
+model Project {
+  id                String     @id @default(cuid())
+  accountId         String
+  account           Account    @relation(fields: [accountId], references: [id])
+  name              String
+  description       String?
+  publicKey         String     @unique
+  secretKey         String     @unique
+  authorizedDomains Json       @default("[]")
+  widget            Json
+  status            String     @default("ACTIVE")
+  createdAt         DateTime   @default(now())
+  feedback          Feedback[]
+}
+
+model Feedback {
+  id          String   @id @default(cuid())
+  projectId   String
+  project     Project  @relation(fields: [projectId], references: [id])
+  title       String
+  body        String?
+  status      String   @default("NEW")
+  authorEmail String?
+  tags        Json     @default("[]")
+  createdAt   DateTime @default(now())
+  context     Json
+  attachments Json     @default("[]")
+  voteCount   Int      @default(0)
+
+  @@index([projectId, status])
+}
+
+model UsageCounter {
+  accountId     String
+  period        String
+  submissions   Int    @default(0)
+  attachmentsMB Int    @default(0)
+  projects      Int    @default(0)
+  seats         Int    @default(0)
+  account       Account @relation(fields: [accountId], references: [id])
+
+  @@id([accountId, period])
+}
+
+model WebhookLog {
+  id        String   @id @default(cuid())
+  accountId String
+  projectId String?
+  event     String
+  payload   Json
+  delivered Boolean @default(false)
+  attempts  Int     @default(0)
+  createdAt DateTime @default(now())
+}
+
+model Audit {
+  id      String   @id @default(cuid())
+  actorId String?
+  action  String
+  entity  String
+  entityId String?
+  before  Json?
+  after   Json?
+  ts      DateTime @default(now())
+}

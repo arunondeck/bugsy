@@ -5,9 +5,11 @@
   "scripts": {
     "dev": "pnpm --filter dashboard-client dev",
     "dev:admin": "pnpm --filter dashboard-admin dev",
-    "build": "pnpm --filter widget build && pnpm --filter dashboard-client build && pnpm --filter dashboard-admin build",
+    "dev:api": "pnpm --filter @bugsy/backend-api dev",
+    "build": "pnpm --filter widget build && pnpm --filter dashboard-client build && pnpm --filter dashboard-admin build && pnpm --filter @bugsy/backend-api build",
     "build:widget": "pnpm --filter widget build",
-    "lint": "pnpm --filter dashboard-client lint && pnpm --filter dashboard-admin lint",
-    "typecheck": "pnpm --filter dashboard-client typecheck && pnpm --filter dashboard-admin typecheck"
+    "lint": "pnpm --filter dashboard-client lint && pnpm --filter dashboard-admin lint && pnpm --filter @bugsy/backend-api lint",
+    "typecheck": "pnpm --filter dashboard-client typecheck && pnpm --filter dashboard-admin typecheck && pnpm --filter @bugsy/backend-api build",
+    "test": "pnpm --filter @bugsy/backend-api test"
   }
 }
